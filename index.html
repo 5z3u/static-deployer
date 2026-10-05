@@ -245,6 +245,23 @@ footer{text-align:center;color:var(--ol);font-size:11px;margin-top:24px;line-hei
         <div class="note" style="margin-top:11px;text-align:center">
           无需手动创建 Token。点击后显示一串码，去 GitHub 输入即可。
         </div>
+        <div class="note" style="margin-top:11px;text-align:center">
+          无需手动创建 Token。点击后显示一串码，去 GitHub 输入即可。
+        </div>
+        <div id="needw" style="display:none;margin-top:13px;background:var(--sc-hi);
+             border:1px solid var(--ol-v);border-radius:16px;padding:14px;text-align:left">
+          <div style="font-size:12.5px;color:var(--on-s);font-weight:500;margin-bottom:5px">
+            需要先配置 Worker 地址
+          </div>
+          <div style="font-size:11.5px;color:var(--on-sv);line-height:1.65;margin-bottom:11px">
+            GitHub 的授权接口不允许浏览器直连，<br>所以「授权登录」需要一道<b style="color:var(--on-s);font-weight:500">你自己的</b> Worker 转发。<br>
+            配置一次即可，之后谁用都不需要 Token。
+          </div>
+          <button class="btn ton blk" onclick="rip(event);saveW()">保存上面的地址并继续</button>
+          <button class="btn txt blk" onclick="rip(event);toast('没配 Worker 就先用「使用 Token」模式，同样是浏览器直连 GitHub')">
+            暂时跳过，用 Token 模式
+          </button>
+        </div>
       </div>
     </div>
 
@@ -263,6 +280,8 @@ footer{text-align:center;color:var(--ol);font-size:11px;margin-top:24px;line-hei
         <input class="inp" id="wurl" placeholder="https://xxx.workers.dev">
         <button class="btn ton" style="flex:0 0 auto;padding:0 18px" onclick="rip(event);saveW()">保存</button>
       </div>
+      <div id="wstat" style="font-size:11px;color:var(--ol);margin-top:7px"></div>
+      <button class="btn txt" style="margin-top:4px;height:36px;font-size:11.5px" onclick="rip(event);testW()">测试连接</button>
       <div style="font-size:11.5px;color:var(--on-sv);line-height:1.7;margin-top:11px">
         <b style="color:var(--on-s);font-weight:500">关于隐私</b><br>
         填了 Worker：<span style="color:var(--ok)">授权登录全程只经过你自己的 Worker</span>，无任何第三方。<br>
@@ -395,15 +414,24 @@ function saveW(){
   if(!v){ toast("请填写 Worker 地址"); return; }
   if(!/^https:\/\/[^\s]+$/.test(v)){ toast("地址需以 https:// 开头"); return; }
   WORKER=v; try{ localStorage.setItem("worker",v) }catch(e){}
-  toast("已保存，可用授权登录");
   refresh();
+  $("needw").style.display="none";
+  mode(1);
+  toast("已保存，现在可以用授权登录了");
+}
+function testW(){
+  if(!WORKER){ toast("请先填写地址"); $("wurl").focus(); return; }
+  toast("正在测试…");
+  wpost("/device/code",{})
+    .then(function(j){
+      toast(j.user_code ? "✓ 连通正常，可取授权码" : "⚠ 返回异常");
+    })
+    .catch(function(e){ toast("✗ 连接失败："+e.message) });
 }
 function refresh(){
-  var ok=!!WORKER;
-  $("m1").disabled=!ok;
-  $("m1").style.opacity=ok?"":".45";
   $("wurl").value=WORKER||"";
-  if(!ok){ mode(2); }
+  $("wstat").textContent = WORKER ? "已配置："+WORKER : "未配置（授权登录需要）";
+  $("wstat").style.color = WORKER ? "var(--ok)" : "var(--ol)";
 }
 function wpost(path, payload){
   if(!WORKER) return Promise.reject(new Error("未配置 Worker"));
@@ -416,7 +444,14 @@ function wpost(path, payload){
 /* ---------- Device Flow ---------- */
 var DEV=null, POLL=null;
 function devStart(){
-  if(!WORKER){ toast("请先填写 Worker 地址"); $("wurl").focus(); return; }
+  if(!WORKER){
+    $("needw").style.display="block";
+    $("dc").style.display="none";
+    $("wurl").focus();
+    $("wurl").scrollIntoView({behavior:"smooth",block:"center"});
+    return;
+  }
+  $("needw").style.display="none";
   $("a1pre").style.display="none"; $("dc").style.display="block";
   $("dst").textContent="正在获取授权码…";
   wpost("/device/code", {})
