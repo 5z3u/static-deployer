@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>静态页部署器 · 一键上线 GitHub Pages</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0b1120;--card:rgba(255,255,255,.055);--fg:#e5e7eb;--muted:#94a3b8;
+--a1:#6366f1;--a2:#ec4899;--ok:#22c55e;--err:#ef4444;--line:rgba(255,255,255,.11)}
+body{background:linear-gradient(170deg,#0b1120,#172033 60%,#0b1120);color:var(--fg);
+font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+padding:22px 16px 70px;line-height:1.65;-webkit-text-size-adjust:100%}
+.wrap{max-width:600px;margin:0 auto}
+header{text-align:center;margin-bottom:24px}
+.logo{width:60px;height:60px;margin:0 auto 12px;border-radius:18px;
+background:linear-gradient(135deg,var(--a1),var(--a2));display:flex;
+align-items:center;justify-content:center;font-size:28px;
+box-shadow:0 10px 30px rgba(99,102,241,.35)}
+h1{font-size:21px;letter-spacing:.3px}
+.sub{color:var(--muted);font-size:12.5px;margin-top:5px}
+.sec{background:var(--card);border:1px solid var(--line);border-radius:18px;
+padding:17px 16px;margin-bottom:14px}
+.sec h2{font-size:14px;margin-bottom:4px;display:flex;align-items:center;gap:7px}
+.sec h2 i{width:21px;height:21px;border-radius:7px;background:var(--a1);
+color:#fff;font-style:normal;font-size:11.5px;display:flex;align-items:center;
+justify-content:center;font-weight:700;flex:0 0 auto}
+.sec>p.hint{color:var(--muted);font-size:11.5px;margin-bottom:12px;padding-left:28px}
+label{display:block;font-size:12px;color:var(--muted);margin:11px 0 5px}
+input[type=text],input[type=password],textarea{
+width:100%;background:rgba(0,0,0,.28);border:1px solid var(--line);
+border-radius:11px;color:var(--fg);padding:11px 12px;font-size:13.5px;
+font-family:inherit;outline:none;transition:border-color .2s}
+input:focus,textarea:focus{border-color:var(--a1)}
+textarea{min-height:132px;resize:vertical;font-family:ui-monospace,Menlo,Consolas,monospace;
+font-size:12px;line-height:1.55;white-space:pre;overflow-wrap:normal;overflow-x:auto}
+::placeholder{color:#64748b}
+.row{display:flex;gap:9px}
+.row>*{flex:1;min-width:0}
+.drop{border:1.5px dashed var(--line);border-radius:14px;padding:20px 12px;
+text-align:center;color:var(--muted);font-size:12.5px;cursor:pointer;
+transition:.2s;background:rgba(0,0,0,.15)}
+.drop:active,.drop.on{border-color:var(--a1);background:rgba(99,102,241,.10)}
+.drop b{display:block;font-size:22px;margin-bottom:5px}
+.files{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.files div{display:flex;align-items:center;gap:8px;font-size:12px;
+background:rgba(0,0,0,.22);padding:8px 11px;border-radius:9px}
+.files span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.files em{color:var(--muted);font-style:normal;font-size:11px}
+.files b{cursor:pointer;color:var(--err);font-weight:400;padding:0 3px}
+.go{width:100%;padding:15px;border:0;border-radius:15px;font-size:16px;
+font-weight:700;color:#fff;cursor:pointer;font-family:inherit;
+background:linear-gradient(135deg,var(--a1),var(--a2));
+box-shadow:0 8px 26px rgba(99,102,241,.32);transition:transform .15s}
+.go:active{transform:scale(.975)}
+.go[disabled]{opacity:.5;box-shadow:none}
+.log{display:none;margin-top:14px;background:rgba(0,0,0,.42);border:1px solid var(--line);
+border-radius:14px;padding:13px;font-family:ui-monospace,Menlo,Consolas,monospace;
+font-size:11.5px;line-height:1.85;max-height:250px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+.log.on{display:block}
+.log .ok{color:var(--ok)}.log .er{color:var(--err)}.log .dim{color:var(--muted)}
+.res{display:none;margin-top:14px;padding:19px 16px;border-radius:18px;text-align:center;
+background:linear-gradient(135deg,rgba(34,197,94,.14),rgba(99,102,241,.14));
+border:1px solid rgba(34,197,94,.35)}
+.res.on{display:block}
+.res h3{font-size:15px;margin-bottom:9px}
+.res a.u{display:block;color:#fff;font-size:14px;font-weight:600;word-break:break-all;
+text-decoration:none;padding:11px;background:rgba(0,0,0,.3);border-radius:11px;margin-bottom:12px}
+.btns{display:flex;gap:9px;margin-bottom:14px}
+.btns button{flex:1;padding:11px;border-radius:11px;border:0;font-size:13px;
+cursor:pointer;font-family:inherit;font-weight:600;color:#fff;background:rgba(99,102,241,.85)}
+.btns button.g{background:rgba(255,255,255,.13)}
+#qr{display:flex;justify-content:center;margin-bottom:9px}
+#qr canvas,#qr img{border-radius:12px;background:#fff;padding:9px}
+.note{color:var(--muted);font-size:11px;line-height:1.7}
+.chk{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:9px}
+.chk input{width:16px;height:16px;accent-color:var(--a1)}
+footer{text-align:center;color:var(--muted);font-size:11px;margin-top:26px;opacity:.7}
+.tabs{display:flex;gap:6px;margin-bottom:11px}
+.tabs button{flex:1;padding:9px;border-radius:10px;border:1px solid var(--line);
+background:rgba(0,0,0,.2);color:var(--muted);font-size:12.5px;cursor:pointer;font-family:inherit}
+.tabs button.on{background:var(--a1);color:#fff;border-color:var(--a1);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo">🚀</div>
+  <h1>静态页部署器</h1>
+  <div class="sub">粘贴代码或上传文件 → 一键上线，拿到公网链接</div>
+</header>
+
+<div class="sec">
+  <h2><i>1</i>页面内容</h2>
+  <div class="tabs">
+    <button id="t1" class="on" onclick="tab(1)">粘贴代码</button>
+    <button id="t2" onclick="tab(2)">上传文件</button>
+  </div>
+
+  <div id="p1">
+    <textarea id="code" spellcheck="false" placeholder="在此粘贴你的 HTML 代码…"></textarea>
+    <label>文件名（默认 index.html）</label>
+    <input type="text" id="fname" value="index.html">
+  </div>
+
+  <div id="p2" style="display:none">
+    <div class="drop" id="drop" onclick="pick()">
+      <b>📁</b>点击选择文件，支持多选<br><span style="opacity:.7">HTML / CSS / JS / 图片 / ZIP 均可</span>
+    </div>
+    <input type="file" id="file" multiple hidden onchange="onFiles(this.files)">
+    <div class="files" id="flist"></div>
+  </div>
+</div>
+
+<div class="sec">
+  <h2><i>2</i>GitHub 凭证</h2>
+  <p class="hint">token 只在你本机浏览器使用，不经过任何服务器</p>
+  <label>Personal Access Token</label>
+  <input type="password" id="tk" placeholder="ghp_ 开头的一串" autocomplete="off">
+  <label class="chk"><input type="checkbox" id="rm">在本机记住 token（下次免填）</label>
+  <div class="row" style="margin-top:11px">
+    <div>
+      <label>仓库名</label>
+      <input type="text" id="repo" placeholder="留空自动生成">
+    </div>
+    <div>
+      <label>私密仓库</label>
+      <select id="priv" style="width:100%;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:11px;color:var(--fg);padding:11px 12px;font-size:13.5px;outline:none">
+        <option value="0">公开</option><option value="1">私密</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<button class="go" id="go" onclick="run()">开始部署</button>
+
+<div class="log" id="log"></div>
+
+<div class="res" id="res">
+  <h3>🎉 部署成功</h3>
+  <a class="u" id="url" href="" target="_blank"></a>
+  <div id="qr"></div>
+  <div class="btns">
+    <button onclick="cp()">复制链接</button>
+    <button class="g" onclick="window.open(document.getElementById('url').href,'_blank')">打开看看</button>
+  </div>
+  <div class="note">首次访问约需 10–60 秒生效。<br>链接永久有效，可随时分享。</div>
+</div>
+
+<footer>纯前端运行 · GitHub API 直连 · 无后端不存数据</footer>
+</div>
+
+<script>
+<script src="qrcode.min.js"></script>
+
+<script>
+var FILES=[], LOG=document.getElementById('log');
+
+function $(id){return document.getElementById(id)}
+function tab(n){
+  $('t1').classList.toggle('on',n===1); $('t2').classList.toggle('on',n===2);
+  $('p1').style.display = n===1?'':'none';
+  $('p2').style.display = n===2?'':'none';
+}
+function pick(){ $('file').click() }
+function onFiles(fs){
+  for(var i=0;i<fs.length;i++) FILES.push(fs[i]);
+  draw();
+}
+function draw(){
+  var h='';
+  FILES.forEach(function(f,i){
+    h+='<div><span>'+f.name+'</span><em>'+(f.size/1024).toFixed(1)+' KB</em>'
+      +'<b onclick="rm('+i+')">✕</b></div>';
+  });
+  $('flist').innerHTML=h;
+}
+function rm(i){ FILES.splice(i,1); draw(); }
+
+function log(msg,cls){
+  var d=document.createElement('div');
+  if(cls) d.className=cls;
+  d.textContent=msg; LOG.appendChild(d);
+  LOG.scrollTop=LOG.scrollHeight;
+}
+function clearLog(){ LOG.innerHTML=''; LOG.classList.add('on'); $('res').classList.remove('on'); }
+
+/* ---------- GitHub API ---------- */
+function api(path, method, body, tk){
+  var h={'Accept':'application/vnd.github+json','User-Agent':'static-deployer'};
+  if(tk) h['Authorization']='Bearer '+tk;
+  if(body) h['Content-Type']='application/json';
+  return fetch('https://api.github.com'+path, {
+    method: method||'GET', headers:h,
+    body: body?JSON.stringify(body):undefined
+  }).then(async function(r){
+    var j=null; try{ j=await r.json(); }catch(e){}
+    if(r.status===204) return {s:204,j:{}};
+    if(!r.ok) { var e=new Error((j&&j.message)||('HTTP '+r.status)); e.status=r.status; throw e; }
+    return {s:r.status, j:j||{}};
+  });
+}
+function sleep(ms){ return new Promise(function(r){setTimeout(r,ms)}) }
+
+function readB64(file){
+  return new Promise(function(res,rej){
+    var fr=new FileReader();
+    fr.onload=function(){
+      var s=fr.result; // data:xxx;base64,....
+      res(s.substring(s.indexOf(',')+1));
+    };
+    fr.onerror=rej;
+    fr.readAsDataURL(file);
+  });
+}
+
+async function run(){
+  var tk=$('tk').value.trim();
+  if(!tk){ alert('请填写 GitHub Token'); return; }
+  if(!tk.startsWith('ghp_') && !tk.startsWith('github_pat_')){
+    if(!confirm('这串看起来不太像 GitHub token（应以 ghp_ 或 github_pat_ 开头）。\n仍要继续吗？')) return;
+  }
+  var mode = $('p1').style.display==='none' ? 'file' : 'code';
+  if(mode==='code' && !$('code').value.trim()){ alert('请粘贴 HTML 代码'); return; }
+  if(mode==='file' && FILES.length===0){ alert('请先选择文件'); return; }
+
+  if($('rm').checked){ try{ localStorage.setItem('ghp_token', tk); }catch(e){} }
+  else { try{ localStorage.removeItem('ghp_token'); }catch(e){} }
+
+  $('go').disabled=true; $('go').textContent='部署中…';
+  clearLog();
+
+  try{
+    log('▶ 验证身份…','dim');
+    var me = await api('/user','GET',null,tk);
+    var owner = me.j.login;
+    log('✓ 已登录：'+owner,'ok');
+
+    var repo = $('repo').value.trim() || ('page-'+Date.now().toString().slice(-6));
+    repo = repo.replace(/[^A-Za-z0-9._-]/g,'-');
+    var priv = $('priv').value==='1';
+
+    log('▶ 创建仓库 '+repo+' …','dim');
+    var rr = await api('/user/repos','POST',{name:repo,private:priv,auto_init:true,description:'deployed via static deployer'},tk);
+    log(rr.s===201?'✓ 仓库已创建':'✓ 仓库已存在，复用','ok');
+
+    var branch='main';
+    for(var i=0;i<15;i++){
+      var info=await api('/repos/'+owner+'/'+repo,'GET',null,tk);
+      if(info.j.default_branch){ branch=info.j.default_branch; break; }
+      await sleep(1200);
+    }
+    log('· 分支：'+branch,'dim');
+
+    var items=[];
+    if(mode==='code'){
+      items.push({path:($('fname').value.trim()||'index.html'), b64:btoa(unescape(encodeURIComponent($('code').value)))});
+    } else {
+      var hasIndex=false;
+      for(var k=0;k<FILES.length;k++){
+        var f=FILES[k], p=(f.webkitRelativePath||f.name);
+        if(p.toLowerCase()==='index.html') hasIndex=true;
+        items.push({path:p, b64:await readB64(f)});
+        log('· 读取 '+p,'dim');
+      }
+      if(!hasIndex) log('⚠ 未发现 index.html，根路径可能打不开','er');
+    }
+
+    for(var m=0;m<items.length;m++){
+      var it=items[m];
+      var cp='/repos/'+owner+'/'+'/contents/'.slice(0,0)+repo+'/contents/'+encodeURIComponent(it.path).replace(/%2F/g,'/');
+      var exist=null;
+      try{ var e=await api(cp+'?ref='+branch,'GET',null,tk); exist=e.j.sha; }catch(e){}
+      var body={message:'deploy '+it.path, content:it.b64, branch:branch};
+      if(exist) body.sha=exist;
+      await api(cp,'PUT',body,tk);
+      log('✓ 已上传 '+it.path,'ok');
+    }
+
+    log('▶ 开启 GitHub Pages…','dim');
+    var pg;
+    try{ pg=await api('/repos/'+owner+'/'+repo+'/pages','GET',null,tk); }
+    catch(e){ pg=null; }
+    if(!pg){
+      try{ await api('/repos/'+owner+'/'+repo+'/pages','POST',{source:{branch:branch,path:'/'}},tk); }
+      catch(e){ log('· Pages 申请已提交（可能需稍候）','dim'); }
+    }
+
+    var url='https://'+owner+'.github.io/'+repo+'/', built=false;
+    for(var n=0;n<25;n++){
+      try{
+        var pp=await api('/repos/'+owner+'/'+repo+'/pages','GET',null,tk);
+        if(pp.j.html_url) url=pp.j.html_url;
+        if(pp.j.status==='built'){ built=true; break; }
+      }catch(e){}
+      await sleep(3000);
+    }
+    log(built?'✓ Pages 已构建完成':'· Pages 构建中，稍等几十秒即可访问','ok');
+    log('','');
+    log('🔗 '+url,'ok');
+
+    show(url);
+  }catch(err){
+    log('✗ 失败：'+err.message,'er');
+    if(err.status===401) log('  token 无效或已过期，请重新生成','dim');
+    if(err.status===403) log('  权限不足，请确认勾选了 repo 权限','dim');
+    if(err.status===422) log('  仓库名可能已存在且冲突，换个名字试试','dim');
+  }finally{
+    $('go').disabled=false; $('go').textContent='开始部署';
+  }
+}
+
+function show(url){
+  $('url').href=url; $('url').textContent=url;
+  $('res').classList.add('on');
+  var q=$('qr'); q.innerHTML='';
+  try{
+    new QRCode(q,{text:url,width:150,height:150,colorDark:'#0b1120',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+  }catch(e){}
+  $('res').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function cp(){
+  var u=$('url').href;
+  navigator.clipboard?navigator.clipboard.writeText(u).then(function(){alert('已复制：'+u)})
+  :alert('请长按链接手动复制');
+}
+
+/* 拖拽 */
+var dz=$('drop');
+['dragenter','dragover'].forEach(function(ev){
+  dz.addEventListener(ev,function(e){e.preventDefault();dz.classList.add('on')});
+});
+['dragleave','drop'].forEach(function(ev){
+  dz.addEventListener(ev,function(e){e.preventDefault();dz.classList.remove('on')});
+});
+dz.addEventListener('drop',function(e){ onFiles(e.dataTransfer.files); });
+
+/* 记住的 token */
+try{
+  var t=localStorage.getItem('ghp_token');
+  if(t){ $('tk').value=t; $('rm').checked=true; }
+}catch(e){}
+</script>
+</body>
+</html>
